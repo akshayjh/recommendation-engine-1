@@ -3,6 +3,12 @@ from nltk.stem.snowball import SnowballStemmer
 from gensim import corpora, models
 import gensim
 
+
+# Stop words
+stopswords = []
+with open("../resources/stopwords.txt") as stopwords_file:
+    stopwords = stopwords_file.read().splitlines()
+
 # Tokenizer for creating word tokens
 tokenizer = RegexpTokenizer(r'\w+')
 
@@ -22,4 +28,20 @@ texts = []
 for i in doc_set:
     raw = i.lower()
     tokens = tokenizer.tokenize(raw)
-    print(tokens)
+
+    stopped_tokens = [i for i in tokens if not i in stopwords]
+
+    stemmed_tokens = [stemmer.stem(i) for i in stopped_tokens]
+
+    texts.append(stemmed_tokens)
+
+
+dic = corpora.Dictionary(texts)
+
+corpus = [dic.doc2bow(text) for text in texts]
+
+ldamodel = gensim.models.ldamodel.LdaModel(corpus, num_topics=2, id2word = dic, passes=20)
+
+
+# print result
+print(ldamodel.print_topics(num_topics = 2, num_words = 2))

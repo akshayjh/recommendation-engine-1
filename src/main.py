@@ -2,7 +2,21 @@ from nltk.tokenize import RegexpTokenizer
 from nltk.stem.snowball import SnowballStemmer
 from gensim import corpora, models
 import gensim
+import os
+import re
 
+# Documents array
+docs = []
+
+# Preprocessing
+path = "/home/mark/temp/articles/"
+
+for filename in os.listdir(path):
+    with open(path + filename, "r") as article_file:
+        article_text = article_file.read().replace("\n", "")
+        remove_html_tags = re.compile("<.*?>")
+        articles_text_stripped = re.sub(remove_html_tags, " ", article_text)
+        docs.append(articles_text_stripped)
 
 # Stop words
 stopswords = []
@@ -15,33 +29,26 @@ tokenizer = RegexpTokenizer(r'\w+')
 # Stemmer for the danish language
 stemmer = SnowballStemmer("danish")
 
-doc_a = "Det er en god dag idag, vi burde feste alle sammen"
-doc_b = "Vi er mange sjove mennesker, som har det sjovt"
-doc_c = "Burde man ikke bare skrive en artikel om alt det her, selvom det er underligt"
-doc_d = "En lille bitte test, som skal teste om vi rent faktisk kan stemme ting"
-
-doc_set = [doc_a, doc_b, doc_c, doc_d]
-
 
 texts = []
 
-for i in doc_set:
+for i in docs:
     raw = i.lower()
     tokens = tokenizer.tokenize(raw)
 
     stopped_tokens = [i for i in tokens if not i in stopwords]
 
-    stemmed_tokens = [stemmer.stem(i) for i in stopped_tokens]
+    #stemmed_tokens = [stemmer.stem(i) for i in stopped_tokens]
 
-    texts.append(stemmed_tokens)
+    texts.append(stopped_tokens)
 
 
 dic = corpora.Dictionary(texts)
 
 corpus = [dic.doc2bow(text) for text in texts]
 
-ldamodel = gensim.models.ldamodel.LdaModel(corpus, num_topics=2, id2word = dic, passes=20)
+ldamodel = gensim.models.ldamodel.LdaModel(corpus, num_topics=100, id2word = dic, passes=30)
 
 
 # print result
-print(ldamodel.print_topics(num_topics = 2, num_words = 2))
+print(ldamodel.print_topics(num_topics = 100, num_words = 3))

@@ -1,12 +1,15 @@
 from nltk.tokenize import RegexpTokenizer
 from nltk.stem.snowball import SnowballStemmer
-from gensim import corpora, models
+from gensim import models
+from gensim.corpora import Dictionary, MmCorpus
 import gensim
+import pyLDAvis.gensim as gensimvis
+import pyLDAvis
 import os
 import re
 
 # Documents array
-docs = []
+articles = []
 
 # Preprocessing
 path = "/home/mark/temp/articles/"
@@ -16,7 +19,7 @@ for filename in os.listdir(path):
         article_text = article_file.read().replace("\n", "")
         remove_html_tags = re.compile("<.*?>")
         articles_text_stripped = re.sub(remove_html_tags, " ", article_text)
-        docs.append(articles_text_stripped)
+        articles.append(articles_text_stripped)
 
 # Stop words
 stopswords = []
@@ -30,25 +33,32 @@ tokenizer = RegexpTokenizer(r'\w+')
 stemmer = SnowballStemmer("danish")
 
 
-texts = []
+docs = []
 
-for i in docs:
+for i in articles:
     raw = i.lower()
     tokens = tokenizer.tokenize(raw)
 
     stopped_tokens = [i for i in tokens if not i in stopwords]
 
-    #stemmed_tokens = [stemmer.stem(i) for i in stopped_tokens]
+    stemmed_tokens = [stemmer.stem(i) for i in stopped_tokens]
 
-    texts.append(stopped_tokens)
-
-
-dic = corpora.Dictionary(texts)
-
-corpus = [dic.doc2bow(text) for text in texts]
-
-ldamodel = gensim.models.ldamodel.LdaModel(corpus, num_topics=15, id2word = dic, passes=30)
+    docs.append(stopped_tokens)
 
 
-# print result
-print(ldamodel.print_topics(num_topics = 15, num_words = 5))
+dictionary = Dictionary(docs)
+dictionary.compactify()
+dictionary.filter_extremes(no_below=5, no_above=0.5, keep_n=None)
+dictionary.compactify()
+
+corpus = [dictionary.doc2bow(doc) for doc in docs]
+
+MmCorpus.serialize("articles.mm", corpus)
+dictionary.save("articles.dict")
+
+
+lda = models.ldamodel.LdaModel(corpus=corpus, id2word = dictionary, num_topics=100, passes=30)
+lda.save("articles_100_lda.model")
+
+vis_data = gensimvis.prepare(lda, corpus, dictionary)
+pyLDAvis.display(vis_data)

@@ -12,7 +12,7 @@ import re
 articles = []
 
 # Preprocessing
-path = "/home/mark/temp/articles/"
+path = "/home/mark/temp/politik/"
 
 for filename in os.listdir(path):
     with open(path + filename, "r") as article_file:
@@ -57,8 +57,8 @@ MmCorpus.serialize("articles.mm", corpus)
 dictionary.save("articles.dict")
 
 
-lda = models.ldamodel.LdaModel(corpus=corpus, id2word = dictionary, num_topics=100, passes=200)
+lda = models.ldamodel.LdaModel(corpus=corpus, id2word = dictionary, num_topics=20, passes=300)
 lda.save("articles_100_lda.model")
 
 vis_data = gensimvis.prepare(lda, corpus, dictionary)
-pyLDAvis.save_html(vis_data, "test")
+pyLDAvis.save_html(vis_data, "politik.html")

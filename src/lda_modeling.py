@@ -57,8 +57,8 @@ MmCorpus.serialize("articles.mm", corpus)
 dictionary.save("articles.dict")
 
 
-lda = models.ldamodel.LdaModel(corpus=corpus, id2word = dictionary, num_topics=100, passes=30)
+lda = models.ldamodel.LdaModel(corpus=corpus, id2word = dictionary, num_topics=100, passes=200)
 lda.save("articles_100_lda.model")
 
 vis_data = gensimvis.prepare(lda, corpus, dictionary)
-pyLDAvis.display(vis_data)
+pyLDAvis.save_html(vis_data, "test")

@@ -1,8 +1,5 @@
 from nltk.tokenize import RegexpTokenizer
 from nltk.stem.snowball import SnowballStemmer
-from gensim import models
-from gensim.corpora import Dictionary, MmCorpus
-import gensim
 import pyLDAvis.gensim as gensimvis
 import pyLDAvis
 import os
@@ -12,7 +9,7 @@ import re
 articles = []
 
 # Preprocessing
-path = "/home/mark/temp/politik/"
+path = "/home/mark/temp/shippingwatch/"
 
 for filename in os.listdir(path):
     with open(path + filename, "r") as article_file:
@@ -22,7 +19,7 @@ for filename in os.listdir(path):
         articles.append(articles_text_stripped)
 
 # Stop words
-stopswords = []
+stopwords = []
 with open("../resources/stopwords.txt") as stopwords_file:
     stopwords = stopwords_file.read().splitlines()
 
@@ -53,12 +50,12 @@ dictionary.compactify()
 
 corpus = [dictionary.doc2bow(doc) for doc in docs]
 
-MmCorpus.serialize("articles.mm", corpus)
-dictionary.save("articles.dict")
+MmCorpus.serialize("../output/articles.mm", corpus)
+dictionary.save("../output/articles.dict")
 
 
-lda = models.ldamodel.LdaModel(corpus=corpus, id2word = dictionary, num_topics=20, passes=300)
-lda.save("articles_100_lda.model")
+lda = models.ldamulticore.LdaMulticore(corpus=corpus, id2word = dictionary, num_topics=20, passes=100)
+lda.save("../output/shippingwatch_20_lda.model")
 
 vis_data = gensimvis.prepare(lda, corpus, dictionary)
-pyLDAvis.save_html(vis_data, "politik.html")
+pyLDAvis.save_html(vis_data, "../output/shippingwatch.html")

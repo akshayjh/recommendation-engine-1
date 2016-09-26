@@ -65,6 +65,7 @@ class LdaModel:
 
 if __name__ == "__main__":
     logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO) 
+
     model = LdaModel("/home/mark/temp/indblik/")
     model.tokenization(model.path_to_corpora)
    
